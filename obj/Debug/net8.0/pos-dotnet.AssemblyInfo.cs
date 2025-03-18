@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("pos-dotnet")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+916d71a64e588349953a3daf91ddc38aa4f363c6")]
 [assembly: System.Reflection.AssemblyProductAttribute("pos-dotnet")]
 [assembly: System.Reflection.AssemblyTitleAttribute("pos-dotnet")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
