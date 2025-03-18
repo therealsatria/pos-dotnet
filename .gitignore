@@ -1,0 +1,50 @@
+# Binaries
+**/bin/
+**/obj/
+
+# Visual Studio files
+*.csproj.user
+*.sln.user
+*.suo
+*.vs/
+*.vssscc
+*.vsproj.user
+*.vsproj.vspscc
+*.vspscc
+
+# NuGet files
+*.nupkg
+*.snupkg
+packages/
+
+# User-specific files
+*.userprefs
+*.user
+*.userosscache
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+
+# Database files
+*.db
+*.sqlite
+
+# Deployment files
+publish/
+
+# Other files
+.DS_Store
+Thumbs.db
+
+# Migrations
+Infrastructure/Data/Migrations/
+
+# IDE specific files
+.idea/
+.vscode/
+
+# Package lock files
+package-lock.json
+yarn.lock
