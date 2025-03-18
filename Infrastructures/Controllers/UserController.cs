@@ -1,13 +1,11 @@
-// UserController.cs
 using Microsoft.AspNetCore.Mvc;
 using Infrastructures.DTOs;
 using Infrastructures.Models;
 using Infrastructures.Services;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Infrastructures.ResponseBuilder;
+using Infrastructures.Exceptions;
 
-namespace Infrastructures.Controllers
+namespace YourWebApiProject.Infrastructures.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -21,39 +19,39 @@ namespace Infrastructures.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ResultDto<User>>> GetUser(Guid id)
+        public async Task<IActionResult> GetUser(Guid id)
         {
             try
             {
                 var user = await _userService.GetByIdAsync(id);
-                if (user == null)
-                {
-                    return NotFound(new ResultDto<User> { Success = false, Message = "User not found.", Data = null });
-                }
-                return Ok(new ResultDto<User> { Success = true, Data = user, Message = "User found successfully." });
+                return ResponseBuilder.Success(user);
+            }
+            catch (NotFoundException ex)
+            {
+                return ResponseBuilder.NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResultDto<User> { Success = false, Message = ex.Message, Data = null });
+                return ResponseBuilder.Error(ex.Message);
             }
         }
 
         [HttpGet]
-        public async Task<ActionResult<ResultDto<IEnumerable<User>>>> GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
             try
             {
                 var users = await _userService.GetAllAsync();
-                return Ok(new ResultDto<IEnumerable<User>> { Success = true, Data = users, Message = "Users retrieved successfully." });
+                return ResponseBuilder.Success(users);
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResultDto<IEnumerable<User>> { Success = false, Message = ex.Message, Data = null });
+                return ResponseBuilder.Error(ex.Message);
             }
         }
 
         [HttpPost]
-        public async Task<ActionResult<ResultDto<User>>> CreateUser(UserCreateRequestDto request)
+        public async Task<IActionResult> CreateUser(UserCreateRequestDto request)
         {
             try
             {
@@ -63,52 +61,59 @@ namespace Infrastructures.Controllers
                     Username = request.Username,
                     Email = request.Email,
                     RoleId = request.RoleId,
-                    Role = null!
+                    Role = null
                 };
                 await _userService.AddAsync(user);
-                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new ResultDto<User> { Success = true, Data = user, Message = "User created successfully." });
+                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, ResponseBuilder.Success(user, "User created successfully."));
+            }
+            catch (ValidationException ex)
+            {
+                return ResponseBuilder.Error(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResultDto<User> { Success = false, Message = ex.Message, Data = null });
+                return ResponseBuilder.Error(ex.Message);
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ResultDto<User>>> UpdateUser(Guid id, UserUpdateRequestDto request)
+        public async Task<IActionResult> UpdateUser(Guid id, UserUpdateRequestDto request)
         {
             try
             {
                 var user = await _userService.GetByIdAsync(id);
-                if (user == null)
-                {
-                    return NotFound(new ResultDto<User> { Success = false, Message = "User not found.", Data = null });
-                }
                 await _userService.UpdateUserAsync(user, request);
-                return Ok(new ResultDto<User> { Success = true, Data = user, Message = "User updated successfully." });
+                return ResponseBuilder.Success(user, "User updated successfully.");
+            }
+            catch (NotFoundException ex)
+            {
+                return ResponseBuilder.NotFound(ex.Message);
+            }
+            catch (ValidationException ex)
+            {
+                return ResponseBuilder.Error(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResultDto<User> { Success = false, Message = ex.Message, Data = null });
+                return ResponseBuilder.Error(ex.Message);
             }
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ResultDto<bool>>> DeleteUser(Guid id)
+        public async Task<IActionResult> DeleteUser(Guid id)
         {
             try
             {
-                var user = await _userService.GetByIdAsync(id);
-                if (user == null)
-                {
-                    return NotFound(new ResultDto<bool> { Success = false, Message = "User not found.", Data = false });
-                }
                 await _userService.DeleteAsync(id);
-                return Ok(new ResultDto<bool> { Success = true, Data = true, Message = "User deleted successfully." });
+                return ResponseBuilder.Success(true, "User deleted successfully.");
+            }
+            catch (NotFoundException ex)
+            {
+                return ResponseBuilder.NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResultDto<bool> { Success = false, Message = ex.Message, Data = false });
+                return ResponseBuilder.Error(ex.Message);
             }
         }
     }

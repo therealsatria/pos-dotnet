@@ -1,4 +1,3 @@
-// NotFoundException.cs
 namespace Infrastructures.Exceptions
 {
     public class NotFoundException : ApiException
