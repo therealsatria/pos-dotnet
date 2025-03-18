@@ -60,8 +60,7 @@ namespace YourWebApiProject.Infrastructures.Controllers
                     Id = Guid.NewGuid(),
                     Username = request.Username,
                     Email = request.Email,
-                    RoleId = request.RoleId,
-                    Role = null
+                    RoleId = request.RoleId
                 };
                 await _userService.AddAsync(user);
                 return CreatedAtAction(nameof(GetUser), new { id = user.Id }, ResponseBuilder.Success(user, "User created successfully."));
