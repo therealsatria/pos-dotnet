@@ -3,7 +3,8 @@ using Infrastructures.DTOs;
 using Infrastructures.Models;
 using Infrastructures.Services;
 using Infrastructures.ResponseBuilder;
-using Infrastructures.Exceptions;
+using System;
+using System.Threading.Tasks;
 
 namespace YourWebApiProject.Infrastructures.Controllers
 {
@@ -15,104 +16,44 @@ namespace YourWebApiProject.Infrastructures.Controllers
 
         public RoleController(RoleService roleService)
         {
-            _roleService = roleService;
+            _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRole(Guid id)
         {
-            try
-            {
-                var role = await _roleService.GetByIdAsync(id);
-                return ResponseBuilder.Success(role);
-            }
-            catch (NotFoundException ex)
-            {
-                return ResponseBuilder.NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            var role = await _roleService.GetByIdAsync(id);
+            return ResponseBuilder.Success(role);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetRoles()
         {
-            try
-            {
-                var roles = await _roleService.GetAllAsync();
-                return ResponseBuilder.Success(roles);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            var roles = await _roleService.GetAllAsync();
+            return ResponseBuilder.Success(roles);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateRole(RoleCreateRequestDto request)
         {
-            try
-            {
-                var role = new Role
-                {
-                    Id = Guid.NewGuid(),
-                    Name = request.Name
-                };
-                await _roleService.AddAsync(role);
-                return CreatedAtAction(nameof(GetRole), new { id = role.Id }, ResponseBuilder.Success(role, "Role created successfully."));
-            }
-            catch (ValidationException ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            var role = await _roleService.AddAsync(request);
+            return CreatedAtAction(nameof(GetRole), new { id = role.Id }, 
+                ResponseBuilder.Success(role, "Role created successfully."));
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRole(Guid id, RoleUpdateRequestDto request)
         {
-            try
-            {
-                var role = await _roleService.GetByIdAsync(id);
-                role.Name = request.Name;
-                await _roleService.UpdateRoleAsync(role, request);
-                return ResponseBuilder.Success(role, "Role updated successfully.");
-            }
-            catch (NotFoundException ex)
-            {
-                return ResponseBuilder.NotFound(ex.Message);
-            }
-            catch (ValidationException ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            var role = await _roleService.GetByIdAsync(id);
+            var updatedRole = await _roleService.UpdateRoleAsync(role, request);
+            return ResponseBuilder.Success(updatedRole, "Role updated successfully.");
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRole(Guid id)
         {
-            try
-            {
-                await _roleService.DeleteAsync(id);
-                return ResponseBuilder.Success(true, "Role deleted successfully.");
-            }
-            catch (NotFoundException ex)
-            {
-                return ResponseBuilder.NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            await _roleService.DeleteAsync(id);
+            return ResponseBuilder.Success(true, "Role deleted successfully.");
         }
     }
 }

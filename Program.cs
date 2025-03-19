@@ -2,11 +2,25 @@ using Microsoft.EntityFrameworkCore;
 using Infrastructures.Data;
 using Infrastructures.Repositories;
 using Infrastructures.Services;
+using Infrastructures.Exceptions;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => {
+    options.Filters.Add<ValidationFilter>();
+})
+.ConfigureApiBehaviorOptions(options => {
+    // Disable automatic model state validation
+    options.SuppressModelStateInvalidFilter = true;
+})
+.AddJsonOptions(options => {
+    // Handle reference cycles
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -40,6 +54,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Use global exception handling middleware
+app.UseGlobalExceptionHandler();
 
 app.UseHttpsRedirection();
 

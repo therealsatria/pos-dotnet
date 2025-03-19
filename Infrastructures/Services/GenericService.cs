@@ -1,4 +1,8 @@
 using Infrastructures.Repositories;
+using Infrastructures.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Infrastructures.Services
 {
@@ -8,32 +12,99 @@ namespace Infrastructures.Services
 
         public GenericService(IGenericRepository<T> repository)
         {
-            _repository = repository;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public async Task<T> GetByIdAsync(Guid id)
+        public virtual async Task<T> GetByIdAsync(Guid id)
         {
-            return await _repository.GetByIdAsync(id);
+            if (id == Guid.Empty)
+                throw new ValidationException("Id cannot be empty");
+            
+            try
+            {
+                return await _repository.GetByIdAsync(id);
+            }
+            catch (NotFoundException)
+            {
+                throw; // Re-throw NotFoundException from repository
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException($"Error retrieving {typeof(T).Name}: {ex.Message}", ex, 500);
+            }
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _repository.GetAllAsync();
+            try
+            {
+                return await _repository.GetAllAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException($"Error retrieving {typeof(T).Name} list: {ex.Message}", ex, 500);
+            }
         }
 
-        public async Task AddAsync(T entity)
+        public virtual async Task AddAsync(T entity)
         {
-            await _repository.AddAsync(entity);
+            if (entity == null)
+                throw new ValidationException($"{typeof(T).Name} cannot be null");
+            
+            try
+            {
+                await _repository.AddAsync(entity);
+            }
+            catch (ApiException)
+            {
+                throw; // Re-throw ApiException from repository
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException($"Error adding {typeof(T).Name}: {ex.Message}", ex, 500);
+            }
         }
 
-        public async Task UpdateAsync(T entity)
+        public virtual async Task UpdateAsync(T entity)
         {
-            await _repository.UpdateAsync(entity);
+            if (entity == null)
+                throw new ValidationException($"{typeof(T).Name} cannot be null");
+            
+            try
+            {
+                await _repository.UpdateAsync(entity);
+            }
+            catch (ApiException)
+            {
+                throw; // Re-throw ApiException from repository
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException($"Error updating {typeof(T).Name}: {ex.Message}", ex, 500);
+            }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public virtual async Task DeleteAsync(Guid id)
         {
-            await _repository.DeleteAsync(id);
+            if (id == Guid.Empty)
+                throw new ValidationException("Id cannot be empty");
+            
+            try
+            {
+                await _repository.DeleteAsync(id);
+            }
+            catch (NotFoundException)
+            {
+                throw; // Re-throw NotFoundException from repository
+            }
+            catch (ApiException)
+            {
+                throw; // Re-throw ApiException from repository
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException($"Error deleting {typeof(T).Name}: {ex.Message}", ex, 500);
+            }
         }
     }
 }

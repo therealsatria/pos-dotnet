@@ -4,6 +4,8 @@ using Infrastructures.Models;
 using Infrastructures.Services;
 using Infrastructures.ResponseBuilder;
 using Infrastructures.Exceptions;
+using System;
+using System.Threading.Tasks;
 
 namespace YourWebApiProject.Infrastructures.Controllers
 {
@@ -15,105 +17,44 @@ namespace YourWebApiProject.Infrastructures.Controllers
 
         public UserController(UserService userService)
         {
-            _userService = userService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(Guid id)
         {
-            try
-            {
-                var user = await _userService.GetByIdAsync(id);
-                return ResponseBuilder.Success(user);
-            }
-            catch (NotFoundException ex)
-            {
-                return ResponseBuilder.NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            var user = await _userService.GetByIdAsync(id);
+            return ResponseBuilder.Success(user);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            try
-            {
-                var users = await _userService.GetAllAsync();
-                return ResponseBuilder.Success(users);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            var users = await _userService.GetAllAsync();
+            return ResponseBuilder.Success(users);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateUser(UserCreateRequestDto request)
         {
-            try
-            {
-                var user = new User
-                {
-                    Id = Guid.NewGuid(),
-                    Username = request.Username,
-                    Email = request.Email,
-                    RoleId = request.RoleId ?? throw new ValidationException("RoleId is required")
-                };
-                await _userService.AddAsync(user);
-                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, ResponseBuilder.Success(user, "User created successfully."));
-            }
-            catch (ValidationException ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            var user = await _userService.AddAsync(request);
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, 
+                ResponseBuilder.Success(user, "User created successfully."));
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(Guid id, UserUpdateRequestDto request)
         {
-            try
-            {
-                var user = await _userService.GetByIdAsync(id);
-                await _userService.UpdateUserAsync(user, request);
-                return ResponseBuilder.Success(user, "User updated successfully.");
-            }
-            catch (NotFoundException ex)
-            {
-                return ResponseBuilder.NotFound(ex.Message);
-            }
-            catch (ValidationException ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            var user = await _userService.GetByIdAsync(id);
+            var updatedUser = await _userService.UpdateUserAsync(user, request);
+            return ResponseBuilder.Success(updatedUser, "User updated successfully.");
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            try
-            {
-                await _userService.DeleteAsync(id);
-                return ResponseBuilder.Success(true, "User deleted successfully.");
-            }
-            catch (NotFoundException ex)
-            {
-                return ResponseBuilder.NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return ResponseBuilder.Error(ex.Message);
-            }
+            await _userService.DeleteAsync(id);
+            return ResponseBuilder.Success(true, "User deleted successfully.");
         }
     }
 }
