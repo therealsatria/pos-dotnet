@@ -60,7 +60,7 @@ namespace YourWebApiProject.Infrastructures.Controllers
                     Id = Guid.NewGuid(),
                     Username = request.Username,
                     Email = request.Email,
-                    RoleId = request.RoleId
+                    RoleId = request.RoleId ?? throw new ValidationException("RoleId is required")
                 };
                 await _userService.AddAsync(user);
                 return CreatedAtAction(nameof(GetUser), new { id = user.Id }, ResponseBuilder.Success(user, "User created successfully."));

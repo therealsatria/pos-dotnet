@@ -18,7 +18,7 @@ namespace Infrastructures.Services
         {
             user.Username = updateDto.Username;
             user.Email = updateDto.Email;
-            user.RoleId = updateDto.RoleId;
+            user.RoleId = updateDto.RoleId ?? Guid.Empty;
             await _userRepository.UpdateAsync(user);
         }
 
@@ -29,18 +29,18 @@ namespace Infrastructures.Services
                 Id = Guid.NewGuid(),
                 Username = createDto.Username,
                 Email = createDto.Email,
-                RoleId = createDto.RoleId
+                RoleId = createDto.RoleId ?? Guid.Empty
             };
             await _userRepository.AddAsync(user);
         }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public new async Task<IEnumerable<User>> GetAllAsync()
         {
             var users = await _userRepository.GetAllAsync();
             return users;
         }
 
-        public async Task<User> GetByIdAsync(Guid id)
+        public new async Task<User> GetByIdAsync(Guid id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
@@ -50,7 +50,7 @@ namespace Infrastructures.Services
             return user;
         }
 
-        public async Task DeleteAsync(Guid id)
+        public new async Task DeleteAsync(Guid id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
