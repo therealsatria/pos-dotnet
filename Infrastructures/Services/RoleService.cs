@@ -1,7 +1,7 @@
 using Infrastructures.DTOs;
 using Infrastructures.Models;
 using Infrastructures.Repositories;
-
+using Infrastructures.Exceptions;
 
 namespace Infrastructures.Services
 {
@@ -20,5 +20,40 @@ namespace Infrastructures.Services
             await _roleRepository.UpdateAsync(role);
         }
 
+        public async Task AddAsync(RoleCreateRequestDto createDto)
+        {
+            var role = new Role
+            {
+                Id = Guid.NewGuid(),
+                Name = createDto.Name
+            };
+            await _roleRepository.AddAsync(role);
+        }
+
+        public async Task<IEnumerable<Role>> GetAllAsync()
+        {
+            var roles = await _roleRepository.GetAllAsync();
+            return roles;
+        }
+
+        public async Task<Role> GetByIdAsync(Guid id)
+        {
+            var role = await _roleRepository.GetByIdAsync(id);
+            if (role == null)
+            {
+                throw new NotFoundException($"Role with ID {id} not found.");
+            }
+            return role;
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            var role = await _roleRepository.GetByIdAsync(id);
+            if (role == null)
+            {
+                throw new NotFoundException($"Role with ID {id} not found.");
+            }
+            await _roleRepository.DeleteAsync(id);
+        }
     }
 }
